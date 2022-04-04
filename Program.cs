@@ -16,15 +16,17 @@ if (app.Environment.IsDevelopment())
 var sendGridApiKey = app.Configuration.GetSection("SendGrid:ApiKey").Get<string>();
 var sendGridClient = new SendGridClient(sendGridApiKey);
 
-app.MapGet("/email/template", async (int pageSize, string? pageToken) =>
+app.MapGet("/email/template", async (int pageSize, string? pageToken, string? search) =>
 {
     var queryParams = @"{
             'generations': 'dynamic',
             'page_size': {0},
-            'page_token': '{1}'
+            'page_token': '{1}',
+            'query': '(template_name LIKE {2})'
         }"
         .Replace("{0}", pageSize.ToString())
-        .Replace("{1}", pageToken);
+        .Replace("{1}", pageToken)
+        .Replace("{2}", "\"" + search + "\"");
     var response = await sendGridClient.RequestAsync(
         BaseClient.Method.GET,
         urlPath: "/templates",
